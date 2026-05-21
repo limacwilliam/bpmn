@@ -55,13 +55,14 @@ export default function ExecutiveKPICard({
     <div
       onClick={onClick}
       className={cn(
-        "group relative h-full rounded-2xl border p-6 bg-background transition-all duration-300 ease-in-out select-none cursor-pointer flex flex-col justify-between",
+        "group relative h-full rounded-2xl p-6 premium-surface overflow-hidden transition-all duration-300 ease-in-out select-none cursor-pointer flex flex-col justify-between focus-within:ring-2 focus-within:ring-accent/20",
         isActive 
           ? "border-accent ring-2 ring-accent/20 shadow-lg shadow-accent/5 -translate-y-1" 
           : "border-border hover:border-accent hover:shadow-md hover:-translate-y-0.5",
         isAlert && "border-destructive/50 ring-1 ring-destructive/10 animate-border-glow"
       )}
     >
+      <div className="pointer-events-none absolute inset-x-0 top-0 h-24 bg-gradient-to-b from-accent/[0.045] to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
       {/* Indicador de Hover no topo */}
       <div 
         className={cn(
@@ -71,7 +72,7 @@ export default function ExecutiveKPICard({
         )} 
       />
 
-      <div>
+      <div className="relative z-10">
         <div className="flex items-start justify-between gap-4">
           {/* Infos do KPI */}
           <div className="space-y-1">
@@ -112,7 +113,7 @@ export default function ExecutiveKPICard({
       </div>
 
       {/* Mini-Gráfico (Sparkline) e Variação */}
-      <div className="flex items-center justify-between mt-6 pt-4 border-t border-border/50">
+      <div className="relative z-10 flex items-center justify-between mt-6 pt-4 border-t border-border/50">
         {/* Tendência */}
         <div className="flex flex-col gap-0.5">
           <div

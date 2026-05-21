@@ -17,7 +17,11 @@ import { cn } from "@/lib/utils";
 import {
   ArrowLeft,
   ArrowRight,
+  Camera,
+  Eye,
+  EyeOff,
   Gauge,
+  Layers,
   Maximize2,
   Pause,
   Play,
@@ -44,6 +48,9 @@ const slideComponents = [
 export default function PresentationClient() {
   const [activeSlide, setActiveSlide] = useState(0);
   const [autoPlay, setAutoPlay] = useState(false);
+  const [chromeHidden, setChromeHidden] = useState(false);
+  const [screenshotMode, setScreenshotMode] = useState(false);
+  const [summaryMode, setSummaryMode] = useState(false);
   const viewportRef = useRef<HTMLDivElement>(null);
 
   const progress = useMemo(
@@ -65,6 +72,9 @@ export default function PresentationClient() {
       if (event.key === "ArrowRight" || event.key === "PageDown") goToSlide(activeSlide + 1);
       if (event.key === "ArrowLeft" || event.key === "PageUp") goToSlide(activeSlide - 1);
       if (event.key.toLowerCase() === "f") viewportRef.current?.requestFullscreen();
+      if (event.key.toLowerCase() === "h") setChromeHidden((current) => !current);
+      if (event.key.toLowerCase() === "s") setScreenshotMode((current) => !current);
+      if (event.key.toLowerCase() === "e") setSummaryMode((current) => !current);
       if (event.key === " ") {
         event.preventDefault();
         setAutoPlay((current) => !current);
@@ -93,8 +103,18 @@ export default function PresentationClient() {
   }, [autoPlay]);
 
   return (
-    <div ref={viewportRef} className="relative min-h-screen bg-secondary/30 text-foreground">
-      <div className="sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur-md">
+    <div
+      ref={viewportRef}
+      className={cn(
+        "relative min-h-screen bg-secondary/30 text-foreground",
+        screenshotMode && "demo-screenshot-mode",
+        summaryMode && "bg-background"
+      )}
+    >
+      <div className={cn(
+        "demo-chrome sticky top-0 z-40 border-b border-border bg-background/90 backdrop-blur-md transition-transform duration-300",
+        chromeHidden && "-translate-y-full"
+      )}>
         <div className="flex flex-col gap-3 px-4 py-3 md:px-6">
           <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
             <div className="flex items-center gap-3 min-w-0">
@@ -148,6 +168,36 @@ export default function PresentationClient() {
                 Next
                 <ArrowRight className="h-4 w-4 text-accent" />
               </button>
+              <button
+                onClick={() => setChromeHidden((current) => !current)}
+                className="inline-flex h-10 items-center gap-2 rounded-full border border-border bg-background px-4 text-xs font-black text-primary hover:border-accent hover:text-accent transition-colors"
+                title="H: hide presentation controls"
+              >
+                {chromeHidden ? <Eye className="h-4 w-4" /> : <EyeOff className="h-4 w-4" />}
+                UI
+              </button>
+              <button
+                onClick={() => setScreenshotMode((current) => !current)}
+                className={cn(
+                  "inline-flex h-10 items-center gap-2 rounded-full px-4 text-xs font-black transition-colors",
+                  screenshotMode ? "bg-primary text-white" : "border border-border bg-background text-primary hover:border-accent hover:text-accent"
+                )}
+                title="S: screenshot-ready mode"
+              >
+                <Camera className="h-4 w-4" />
+                Shot
+              </button>
+              <button
+                onClick={() => setSummaryMode((current) => !current)}
+                className={cn(
+                  "inline-flex h-10 items-center gap-2 rounded-full px-4 text-xs font-black transition-colors",
+                  summaryMode ? "bg-primary text-white" : "border border-border bg-background text-primary hover:border-accent hover:text-accent"
+                )}
+                title="E: executive summary mode"
+              >
+                <Layers className="h-4 w-4" />
+                Summary
+              </button>
             </div>
           </div>
 
@@ -162,8 +212,9 @@ export default function PresentationClient() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-[16rem_1fr]">
-        <aside className="hidden xl:block sticky top-[89px] h-[calc(100vh-89px)] border-r border-border bg-background/70 backdrop-blur-md p-4 overflow-y-auto custom-scrollbar">
+      <div className={cn("grid grid-cols-1", !summaryMode && "xl:grid-cols-[16rem_1fr]")}>
+        {!summaryMode && (
+          <aside className="demo-chrome hidden xl:block sticky top-[89px] h-[calc(100vh-89px)] border-r border-border bg-background/70 backdrop-blur-md p-4 overflow-y-auto custom-scrollbar">
           <div className="space-y-2">
             {presentationSlides.map((slide, index) => (
               <button
@@ -183,34 +234,48 @@ export default function PresentationClient() {
               </button>
             ))}
           </div>
-        </aside>
+          </aside>
+        )}
 
-        <main className="space-y-8 p-4 md:p-6 xl:p-8">
-          {presentationSlides.map((slide, index) => (
-            <section
-              key={slide.id}
-              id={`presentation-slide-${index}`}
-              className="scroll-mt-32 space-y-5 animate-page-in"
-            >
-              {index !== 0 && index !== presentationSlides.length - 1 && (
-                <div className="mx-auto max-w-6xl text-center">
-                  <div className="inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent/10 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-accent">
-                    <Sparkles className="h-3.5 w-3.5" />
-                    {slide.eyebrow}
+        <main className={cn("space-y-8 p-4 md:p-6 xl:p-8", summaryMode && "mx-auto max-w-7xl")}>
+          {(summaryMode ? [0, 1, 3, 4, 6, 9, 10, 11] : presentationSlides.map((_, index) => index)).map((index) => {
+            const slide = presentationSlides[index];
+            return (
+              <section
+                key={slide.id}
+                id={`presentation-slide-${index}`}
+                className="demo-slide scroll-mt-32 space-y-5 presentation-reveal"
+              >
+                {index !== 0 && index !== presentationSlides.length - 1 && (
+                  <div className="mx-auto max-w-6xl text-center">
+                    <div className="inline-flex items-center gap-2 rounded-full border border-accent/20 bg-accent/10 px-4 py-2 text-[10px] font-black uppercase tracking-widest text-accent">
+                      <Sparkles className="h-3.5 w-3.5" />
+                      {slide.eyebrow}
+                    </div>
+                    <h2 className="mt-5 text-3xl md:text-5xl font-black text-primary tracking-tight leading-tight">
+                      {slide.title}
+                    </h2>
+                    <p className="mx-auto mt-4 max-w-3xl text-sm md:text-base leading-relaxed text-muted-foreground font-medium">
+                      {slide.narrative}
+                    </p>
                   </div>
-                  <h2 className="mt-5 text-3xl md:text-5xl font-black text-primary tracking-tight leading-tight">
-                    {slide.title}
-                  </h2>
-                  <p className="mx-auto mt-4 max-w-3xl text-sm md:text-base leading-relaxed text-muted-foreground font-medium">
-                    {slide.narrative}
-                  </p>
-                </div>
-              )}
-              {slideComponents[index]}
-            </section>
-          ))}
+                )}
+                {slideComponents[index]}
+              </section>
+            );
+          })}
         </main>
       </div>
+
+      <button
+        onClick={() => setChromeHidden(false)}
+        className={cn(
+          "fixed right-4 top-4 z-50 rounded-full bg-primary px-4 py-2 text-[10px] font-black uppercase tracking-widest text-white shadow-xl transition-all",
+          chromeHidden && !screenshotMode ? "opacity-100 translate-y-0" : "pointer-events-none opacity-0 -translate-y-2"
+        )}
+      >
+        Show controls
+      </button>
     </div>
   );
 }
