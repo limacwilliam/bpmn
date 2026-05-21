@@ -14,7 +14,7 @@ export const metadata: Metadata = {
   title: "HIT - Central de Governança Operacional",
   description: "Plataforma Central de Inteligência, Governança e Mapeamento de Processos Corporativos da HIT.",
   icons: {
-    icon: "/logo-hit.png",
+    icon: "/logo-hit.svg",
   },
 };
 

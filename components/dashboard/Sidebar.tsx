@@ -1,6 +1,8 @@
 "use client";
 
 import { NAVIGATION_GROUPS } from "@/config/navigation";
+import { useAuth } from "@/lib/auth/AuthProvider";
+import { DEMO_ADMIN } from "@/lib/auth/constants";
 import { cn } from "@/lib/utils";
 import {
   ChevronLeft,
@@ -21,7 +23,13 @@ interface SidebarProps {
 
 export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
   const pathname = usePathname();
+  const { user, logout, isLoading } = useAuth();
   const [searchTerm, setSearchTerm] = useState("");
+  const displayUser = user ?? {
+    name: DEMO_ADMIN.name,
+    role: DEMO_ADMIN.role,
+    initials: DEMO_ADMIN.initials,
+  };
 
   // Filtra itens de navegação em tempo real com base no input de busca
   const filteredGroups = useMemo(() => {
@@ -47,7 +55,7 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
         <div className="flex items-center gap-3 overflow-hidden">
           <div className="relative flex-shrink-0 w-8 h-8 overflow-hidden rounded-lg bg-white/10 p-0.5">
             <Image
-              src="/logo-hit.png"
+              src="/logo-hit.svg"
               alt="HIT Logo"
               fill
               className="object-contain p-1"
@@ -177,15 +185,15 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
           {/* Avatar e Infos */}
           <div className="flex items-center gap-3 overflow-hidden">
             <div className="relative flex-shrink-0 w-9 h-9 rounded-full bg-accent flex items-center justify-center text-white font-black text-sm shadow-md border-2 border-white/15">
-              WL
+              {displayUser.initials}
             </div>
             {!collapsed && (
               <div className="flex flex-col min-w-0 select-none">
                 <span className="text-xs font-bold text-white truncate">
-                  William Lima
+                  {displayUser.name}
                 </span>
                 <span className="text-[10px] text-accent font-semibold truncate uppercase tracking-wider flex items-center gap-1 mt-0.5">
-                  <UserCheck className="w-2.5 h-2.5" /> Lead Ops
+                  <UserCheck className="w-2.5 h-2.5" /> {displayUser.role}
                 </span>
               </div>
             )}
@@ -194,8 +202,11 @@ export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
           {/* Botão de Logout */}
           {!collapsed && (
             <button
+              type="button"
               title="Sair do Portal"
-              className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-white/5 transition-colors cursor-pointer"
+              disabled={isLoading}
+              onClick={() => logout()}
+              className="p-2 rounded-lg text-muted-foreground hover:text-destructive hover:bg-white/5 transition-colors cursor-pointer disabled:opacity-50"
             >
               <LogOut className="w-4 h-4" />
             </button>

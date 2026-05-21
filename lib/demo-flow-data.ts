@@ -250,6 +250,11 @@ export const leadershipDemoFlow: LeadershipDemoStep[] = [
 
 export const demoSafeChecklist: DemoSafeItem[] = [
   {
+    label: "Autenticação demo estável",
+    status: "ready",
+    detail: "Login, logout, sessão persistente e rotas protegidas com acesso admin@hit.demo.",
+  },
+  {
     label: "Dataset executivo carregado",
     status: "ready",
     detail: "40 processos, gargalos, KPIs, clientes, roadmap, BPMNs e insights de IA conectados.",
@@ -276,8 +281,8 @@ export const demoSafeChecklist: DemoSafeItem[] = [
   },
   {
     label: "Fallback de apresentação",
-    status: "attention",
-    detail: "Manter `/admin/demo`, `/admin/presentation` e `/admin/dashboard` abertos antes da reunião.",
+    status: "ready",
+    detail: "Boundary demo-safe ativo; use `/admin/demo` como ponto de entrada da reunião.",
   },
 ];
 

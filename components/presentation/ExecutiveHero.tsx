@@ -16,7 +16,7 @@ export default function ExecutiveHero() {
       <div className="relative z-10 flex items-center justify-between gap-6">
         <div className="flex items-center gap-3">
           <div className="relative h-11 w-11 rounded-xl bg-white/10 border border-white/10 overflow-hidden">
-            <Image src="/logo-hit.png" alt="HIT" fill className="object-contain p-2" priority />
+            <Image src="/logo-hit.svg" alt="HIT" fill className="object-contain p-2" priority />
           </div>
           <div>
             <span className="text-[10px] font-black uppercase tracking-[0.28em] text-accent">

@@ -56,19 +56,20 @@ export default function Header() {
         </Link>
         {breadcrumbs.map((crumb, idx) => {
           if (idx === 0 && crumb.name === "HIT Governance") return null;
+          const isLast = idx === breadcrumbs.length - 1;
           return (
             <React.Fragment key={idx}>
               <span className="text-muted-foreground/60">/</span>
-              <span
-                className={cn(
-                  "font-bold",
-                  idx === breadcrumbs.length - 1
-                    ? "text-primary"
-                    : "text-muted-foreground hover:text-accent transition-colors"
-                )}
-              >
-                {crumb.name}
-              </span>
+              {isLast ? (
+                <span className="font-bold text-primary">{crumb.name}</span>
+              ) : (
+                <Link
+                  href={crumb.href}
+                  className="font-bold text-muted-foreground hover:text-accent transition-colors"
+                >
+                  {crumb.name}
+                </Link>
+              )}
             </React.Fragment>
           );
         })}
@@ -144,12 +145,13 @@ export default function Header() {
         </div>
 
         {/* Informações Auxiliares */}
-        <button
+        <Link
+          href="/admin/docs"
           title="Ajuda & Documentação"
-          className="p-2 h-10 w-10 flex items-center justify-center rounded-lg border border-border bg-background hover:bg-muted text-foreground transition-all hover:scale-105 cursor-pointer"
+          className="p-2 h-10 w-10 flex items-center justify-center rounded-lg border border-border bg-background hover:bg-muted text-foreground transition-all hover:scale-105"
         >
           <HelpCircle className="w-4.5 h-4.5 text-foreground" />
-        </button>
+        </Link>
       </div>
     </header>
   );

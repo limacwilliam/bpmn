@@ -1,5 +1,6 @@
 import React from "react";
 import { ShieldAlert, Plus, ShieldCheck, AlertTriangle } from "lucide-react";
+import Link from "next/link";
 
 export default function RisksPage() {
   return (
@@ -12,9 +13,12 @@ export default function RisksPage() {
           </p>
         </div>
 
-        <button className="inline-flex items-center gap-2 bg-accent text-white hover:bg-accent-hover px-5 py-2.5 rounded-full font-semibold text-xs transition-colors cursor-pointer select-none">
-          <Plus className="w-3.5 h-3.5" /> Cadastrar Risco
-        </button>
+        <Link
+          href="/admin/processes"
+          className="inline-flex items-center gap-2 bg-accent text-white hover:bg-accent-hover px-5 py-2.5 rounded-full font-semibold text-xs transition-colors select-none"
+        >
+          <Plus className="w-3.5 h-3.5" /> Ver processos relacionados
+        </Link>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-3 gap-8 font-semibold">

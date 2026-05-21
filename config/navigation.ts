@@ -12,7 +12,9 @@ import {
   Presentation,
   Route,
   Settings,
+  ShieldAlert,
   SlidersHorizontal,
+  Users,
   type LucideIcon,
 } from "lucide-react";
 
@@ -117,11 +119,21 @@ export const NAVIGATION_GROUPS: NavigationGroup[] = [
         badge: "3 Alertas",
         badgeColor: "bg-destructive text-destructive-foreground animate-pulse",
       },
+      {
+        name: "Customer Success",
+        href: "/admin/customer-success",
+        icon: Users,
+      },
     ],
   },
   {
     category: "Estratégia & Risco",
     items: [
+      {
+        name: "Risks",
+        href: "/admin/risks",
+        icon: ShieldAlert,
+      },
       {
         name: "Roadmaps",
         href: "/admin/roadmaps",

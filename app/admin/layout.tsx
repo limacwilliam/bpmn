@@ -1,5 +1,6 @@
 "use client";
 
+import DemoSafeBoundary from "@/components/demo/DemoSafeBoundary";
 import Header from "@/components/dashboard/Header";
 import Sidebar from "@/components/dashboard/Sidebar";
 import { CHROMELESS_ADMIN_ROUTES } from "@/config/navigation";
@@ -37,7 +38,7 @@ export default function AdminLayout({
             "mx-auto space-y-8",
             isChromelessRoute ? "max-w-none p-0 pb-0" : "max-w-7xl pb-12"
           )}>
-            {children}
+            <DemoSafeBoundary>{children}</DemoSafeBoundary>
           </div>
         </main>
       </div>

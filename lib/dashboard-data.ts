@@ -1,3 +1,12 @@
+import {
+  customerHealthData,
+  enterpriseBottlenecks,
+  enterpriseKpis,
+  enterpriseProcesses,
+  organizationData,
+  transformationRoadmap,
+} from "@/lib/enterprise-operational-data";
+
 export type KPIIconKey =
   | "processes"
   | "projects"
@@ -199,11 +208,3 @@ export const executiveRecommendations: ExecutiveRecommendation[] = [
     due: initiative.timeline,
   })),
 ];
-import {
-  customerHealthData,
-  enterpriseBottlenecks,
-  enterpriseKpis,
-  enterpriseProcesses,
-  organizationData,
-  transformationRoadmap,
-} from "@/lib/enterprise-operational-data";

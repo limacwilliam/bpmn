@@ -1,5 +1,6 @@
 "use client";
 
+import { AuthProvider } from "@/lib/auth/AuthProvider";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import React, { createContext, useContext, useEffect, useState } from "react";
 
@@ -75,7 +76,7 @@ export default function Providers({ children }: { children: React.ReactNode }) {
   return (
     <QueryClientProvider client={queryClient}>
       <ThemeProvider>
-        {children}
+        <AuthProvider>{children}</AuthProvider>
       </ThemeProvider>
     </QueryClientProvider>
   );
