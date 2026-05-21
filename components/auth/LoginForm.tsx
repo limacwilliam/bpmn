@@ -115,7 +115,7 @@ export default function LoginForm() {
       >
         <p className="text-[10px] font-black uppercase tracking-widest text-accent">Acesso demo executivo</p>
         <p className="mt-1 text-xs font-semibold text-muted-foreground">
-          {DEMO_ADMIN.email} · senha pré-configurada para apresentação
+          {DEMO_ADMIN.email} · senha: {DEMO_ADMIN.password}
         </p>
       </button>
     </form>

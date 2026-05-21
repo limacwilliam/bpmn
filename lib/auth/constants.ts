@@ -7,7 +7,7 @@ export const AUTH_ROUTES = {
 
 export const DEMO_ADMIN = {
   email: "admin@hit.demo",
-  password: "HIT-Demo2026!",
+  password: "123456",
   name: "William Lima",
   role: "Lead Ops",
   initials: "WL",
