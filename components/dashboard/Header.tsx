@@ -1,6 +1,7 @@
 "use client";
 
 import { useTheme } from "@/app/providers";
+import { getRouteName } from "@/config/navigation";
 import { cn } from "@/lib/utils";
 import {
   Bell,
@@ -12,23 +13,6 @@ import {
 import { usePathname } from "next/navigation";
 import Link from "next/link";
 import React, { useEffect, useMemo, useState } from "react";
-
-// Dicionário de tradução de rotas para exibição amigável em português
-const ROUTE_NAMES: Record<string, string> = {
-  admin: "HIT Governance",
-  dashboard: "Dashboard Executivo",
-  processes: "Mapeamento de Processos",
-  bpmn: "Modelador BPMN",
-  kpis: "Gestão de KPIs e SLAs",
-  bottlenecks: "Análise de Gargalos",
-  "customer-success": "Sucesso do Cliente",
-  risks: "Matriz de Riscos",
-  roadmaps: "Transformation Roadmaps",
-  "org-structure": "Estrutura Organizacional",
-  meetings: "Transcrição de Reuniões",
-  "ai-analysis": "Analista IA Operacional",
-  docs: "Repositório de Docs",
-};
 
 export default function Header() {
   const pathname = usePathname();
@@ -54,10 +38,13 @@ export default function Header() {
   // Resolve os caminhos das breadcrumbs
   const breadcrumbs = useMemo(() => {
     const segments = pathname.split("/").filter(Boolean);
-    return segments.map((segment) => ({
-      name: ROUTE_NAMES[segment] || segment.charAt(0).toUpperCase() + segment.slice(1),
-      href: `/admin/${segment}` === pathname ? "#" : `/admin/${segment}`,
-    }));
+    return segments.map((segment, index) => {
+      const href = `/${segments.slice(0, index + 1).join("/")}`;
+      return {
+        name: getRouteName(segment),
+        href: href === pathname ? "#" : href,
+      };
+    });
   }, [pathname]);
 
   return (
@@ -167,5 +154,3 @@ export default function Header() {
     </header>
   );
 }
-
-

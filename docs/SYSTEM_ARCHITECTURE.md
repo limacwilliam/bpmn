@@ -1,68 +1,99 @@
-# SYSTEM_ARCHITECTURE - Arquitetura de Sistemas e Engenharia
+# HIT Operations Platform - System Architecture
 
-> **Contexto Técnico e de Engenharia para Desenvolvimento Assistido por IA**
-> Este documento define a infraestrutura, a pilha tecnológica e as diretrizes de desenvolvimento técnico da HIT Operations Platform. Alterações na arquitetura de rotas do Next.js 16, no pool de conexões Prisma 7 ou na autenticação Supabase devem obedecer estritamente às normas aqui fixadas para manter a estabilidade produtiva do sistema.
+This document describes the current enterprise architecture of the HIT Operations Platform after the executive dashboard, presentation mode, enterprise mock data and leadership demo environment were added.
 
----
+## 1. Application Shape
 
-## 1. Visão Geral da Arquitetura
-A plataforma foi arquitetada como uma aplicação web robusta de alta fidelidade e tipo-seguro (*type-safe*). A pilha é focada em desempenho extremo de renderização, isolamento de escopo de microsserviços e segurança corporativa.
+The platform uses Next.js App Router with a domain-oriented admin surface under `app/admin`.
 
 ```mermaid
 graph TD
-    User([WL Lead Ops / Executivo]) -->|Navegação HSL| NextJS[Next.js 16 - React 19]
-    
-    subgraph NextJS_App [Camada de Aplicação - App Router]
-        NextJS -->|Layout Chrome| AdminLayout[app/admin/layout.tsx]
-        NextJS -->|Provedores de Contexto| Providers[app/providers.tsx - Query & Theme]
-        AdminLayout -->|Módulos de Governança| Pages[12 Módulos Administrativos]
-        Pages -->|Gráficos Client| DashboardClient[DashboardClient.tsx - Recharts]
-        Pages -->|Widgets Server| MetricCard[MetricCard.tsx - SVG Sparklines]
-    end
-    
-    NextJS_App -->|Pooling de Conexões pg| PrismaORM[Prisma Client v7]
-    NextJS_App -->|Helpers de Autenticação| SupabaseAuth[Supabase Auth API]
-    
-    PrismaORM -->|Adaptador de Driver Nativo pg| PostgreSQL[(PostgreSQL Database)]
+  Root["/"] --> AdminRedirect["/admin/dashboard"]
+  AdminLayout["app/admin/layout.tsx"] --> Chrome["Sidebar + Header"]
+  AdminLayout --> Modules["Admin modules"]
+  Modules --> Dashboard["/admin/dashboard"]
+  Modules --> Presentation["/admin/presentation"]
+  Modules --> Demo["/admin/demo"]
+  Modules --> BPMN["/admin/bpmn"]
+  Modules --> AI["/admin/ai-analysis"]
+  Modules --> Process["/admin/processes"]
 ```
 
----
+## 2. Folder Responsibilities
 
-## 2. Arquitetura Frontend
-O frontend é construído sobre o framework **Next.js 16 (React 19)**, aproveitando os recursos modernos do App Router para otimização de renderização e divisão de responsabilidades.
+| Folder | Responsibility |
+| --- | --- |
+| `app/admin/*` | Route entry points and route-specific client containers. |
+| `components/dashboard` | Executive cockpit widgets and shared admin chrome currently used by dashboard/admin shell. |
+| `components/presentation` | Fullscreen leadership storytelling components. |
+| `components/bpmn` | BPMN canvas, nodes, inspector, toolbar, comparison and analytics overlays. |
+| `components/ai` | AI analysis panels, transcript workflow, recommendations and operational health views. |
+| `components/process` | Process inventory cards, table, maturity, risks, dependencies and timeline. |
+| `config/navigation.ts` | Single source of truth for sidebar groups, route labels and breadcrumb naming. |
+| `lib/*-data.ts` | Enterprise demo data, dashboard aggregates, presentation storyline and leadership demo narrative. |
+| `lib/sparkline.ts` | Shared lightweight SVG sparkline path generation. |
+| `lib/supabase` and `lib/prisma.ts` | Future backend integration helpers. |
 
-*   **Hybrid Rendering (SSR & Server Components)**: Componentes focados em visualização estática ou processamento sem dependências de hooks de cliente (ex: `MetricCard.tsx` que gera sparklines SVG de forma programática) são renderizados inteiramente no lado do servidor. Isso diminui o tamanho do pacote JS enviado ao navegador e elimina a latência de hidratação.
-*   **Isolamento Cliente ("use client")**: Painéis interativos avançados que utilizam animações pesadas (Framer Motion) ou renderização de gráficos (Recharts, como o `DashboardClient.tsx`) são marcados estritamente com `"use client"`.
-*   **Pre-rendering Híbrido Amigável**: Os contextos e hooks personalizados (ex: `useTheme` em `app/providers.tsx`) oferecem um retorno de fallback seguro (`theme = "light"`) para suportar a compilação de produção (`npm run build`) livre de falhas de renderização estática.
+## 3. Routing Conventions
 
----
+- `/` redirects to `/admin/dashboard`.
+- `/admin` redirects to `/admin/dashboard`.
+- `/admin/presentation` is a chrome-free route inside the admin layout for fullscreen leadership storytelling.
+- `/admin/demo` is the presenter command center with the demo script, talking points, wow moments and safe-mode checklist.
+- Route names and sidebar definitions must be updated in `config/navigation.ts`, not inside individual chrome components.
 
-## 3. Arquitetura Backend & Estrutura de APIs
-O backend da plataforma opera de forma integrada e híbrida no Next.js Serverless e APIs baseadas em eventos no Supabase:
+## 4. Component Organization
 
-*   **Serverless Edge Actions & Route Handlers**: As chamadas de gravação, manipulação de processos e versionamento BPMN são orquestradas por rotas dinâmicas do App Router (`app/api/`) escritas com tipagem robusta em TypeScript.
-*   **Integração Supabase Realtime**: Eventos críticos de violação de SLAs ou novos incidentes operacionais são escutados em tempo real na camada do cliente conectando-se diretamente aos canais do Supabase Realtime via WebSockets.
-*   **Agente de IA Integrado**: O módulo de inteligência assistida (`/admin/ai-analysis`) integra conexões de backend com modelos de linguagem de larga escala para analisar atas de reuniões corporativas e metadados estruturados de processos.
+The project uses domain components instead of one large global component bucket. This is intentional:
 
----
+- Dashboard widgets can be dense and metric-driven.
+- Presentation widgets can be cinematic and slide-oriented.
+- BPMN widgets can own canvas-specific concerns.
+- AI widgets can own transcript and recommendation workflows.
 
-## 4. Arquitetura do Banco de Dados & Prisma 7
-A plataforma adota o banco de dados **PostgreSQL** hospedado na infraestrutura de nuvem, mapeado com segurança de tipos de ponta a ponta pelo **Prisma ORM 7**.
+Cross-domain logic should move to `lib` or `config` only when the same behavior appears in multiple places. Current examples:
 
-*   **Prisma 7 Configuração Dinâmica**: Seguindo as diretrizes do Prisma 7, as variáveis de conexão de banco de dados (`url` e `directUrl`) são gerenciadas centralizadamente por meio do arquivo `prisma.config.ts`, suportando variáveis de ambiente seguras.
-*   **Pool de Conexões Singleton Nativo**: A fim de evitar o estouro de limite de conexões simultâneas durante a escalabilidade horizontal serverless, a plataforma implementa em `lib/prisma.ts` um singleton do pool de conexões utilizando o driver nativo `pg` e o adaptador `@prisma/adapter-pg`.
-*   **Fallback no Cliente**: O singleton de conexão Prisma detecta se a importação do cliente ocorre no navegador, gerando um fallback seguro de tratamento de erro para impedir vazamentos de chaves ou credenciais no lado do browser.
+- Navigation data: `config/navigation.ts`
+- Sparkline path generation: `lib/sparkline.ts`
+- Enterprise operational data: `lib/enterprise-operational-data.ts`
 
----
+## 5. State Management
 
-## 5. Segurança & Autenticação (*Authentication*)
-A segurança corporativa é controlada de forma modular e granular em parceria com o **Supabase Auth**:
+State is intentionally local for now:
 
-*   **Helpers Modularizados**: Helpers dedicados em `lib/supabase/client.ts` e `lib/supabase/server.ts` facilitam a verificação de sessões, login SSO empresarial e proteção estrita de rotas administrativas.
-*   **Middleware de Segurança**: O middleware intercepta chamadas na rota `/admin` e subpastas, validando a integridade do token JWT de autenticação do usuário. Acesso não autenticado é redirecionado imediatamente para a página de login institucional.
+- Admin shell state: sidebar collapsed state in `app/admin/layout.tsx`.
+- Dashboard state: active dashboard tab in `DashboardClient.tsx`.
+- Presentation state: active slide, autoplay, screenshot mode, summary mode and chrome visibility in `PresentationClient.tsx`.
 
----
+This is appropriate because there is no cross-route mutable business state yet. Introduce global state only when multiple route trees need to mutate the same live operational model.
 
-## 6. Estratégia de Escalabilidade (*Scalability Strategy*)
-*   **Caching Inteligente**: Utilização de estratégias de *Incremental Static Regeneration* (ISR) e revalidação sob demanda (`revalidateTag`) para páginas de POPs e relatórios, eliminando consultas repetitivas de leitura ao banco de dados PostgreSQL.
-*   **Processamento Descentralizado de IA**: Chamadas de IA de processamento pesado de arquivos e transcrições de atas são enviadas para rotas com timeout estendido em background, evitando o bloqueio da thread principal da interface do usuário.
+## 6. Data Architecture
+
+The current dataset is presentation-grade and centralized enough for demo stability:
+
+- `lib/enterprise-operational-data.ts`: process, KPI, customer, org, BPMN, AI insight and roadmap data.
+- `lib/dashboard-data.ts`: dashboard-specific aggregates and KPI cards.
+- `lib/presentation-data.ts`: slide storyline, AS IS/TO BE flows and presentation visuals.
+- `lib/demo-flow-data.ts`: final leadership demo flow, talking points, script and recommendations.
+
+Future live integrations should keep this layering:
+
+1. Raw operational sources or APIs.
+2. Normalized domain data.
+3. View-model aggregates per experience.
+4. UI components consuming view models.
+
+## 7. Known Stabilization Notes
+
+- Several legacy/generated components still contain unused imports and variables. They are lint warnings only and do not block `next build`.
+- `components/dashboard/Header.tsx` and `Sidebar.tsx` remain in `components/dashboard` for compatibility, but they now consume shared navigation config. If the shell grows, move them to `components/layout` in a dedicated migration.
+- Similar names such as `RiskMatrix` and `BottleneckHeatmap` exist in multiple domains. They are not currently duplicates; they serve different presentation contexts. Extract shared primitives only if behavior converges.
+
+## 8. Validation Commands
+
+Use these commands after architecture changes:
+
+```bash
+npm run lint
+npm run build
+```

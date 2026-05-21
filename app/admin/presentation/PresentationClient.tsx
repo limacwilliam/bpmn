@@ -45,13 +45,26 @@ const slideComponents = [
   <FinalVisionStatement key="final" />,
 ];
 
+function getInitialSlideIndex() {
+  if (typeof window === "undefined") return 0;
+
+  const hashMatch = window.location.hash.match(/presentation-slide-(\d+)/);
+  if (!hashMatch) return 0;
+
+  const requestedSlide = Number(hashMatch[1]);
+  if (Number.isNaN(requestedSlide)) return 0;
+
+  return Math.max(0, Math.min(requestedSlide, presentationSlides.length - 1));
+}
+
 export default function PresentationClient() {
-  const [activeSlide, setActiveSlide] = useState(0);
+  const [activeSlide, setActiveSlide] = useState(getInitialSlideIndex);
   const [autoPlay, setAutoPlay] = useState(false);
   const [chromeHidden, setChromeHidden] = useState(false);
   const [screenshotMode, setScreenshotMode] = useState(false);
   const [summaryMode, setSummaryMode] = useState(false);
   const viewportRef = useRef<HTMLDivElement>(null);
+  const initialHashHandled = useRef(false);
 
   const progress = useMemo(
     () => ((activeSlide + 1) / presentationSlides.length) * 100,
@@ -61,11 +74,24 @@ export default function PresentationClient() {
   const goToSlide = useCallback((index: number) => {
     const nextIndex = Math.max(0, Math.min(index, presentationSlides.length - 1));
     setActiveSlide(nextIndex);
+    window.history.replaceState(null, "", `#presentation-slide-${nextIndex}`);
     document.getElementById(`presentation-slide-${nextIndex}`)?.scrollIntoView({
       behavior: "smooth",
       block: "start",
     });
   }, []);
+
+  useEffect(() => {
+    if (initialHashHandled.current) return;
+    initialHashHandled.current = true;
+
+    window.requestAnimationFrame(() => {
+      document.getElementById(`presentation-slide-${activeSlide}`)?.scrollIntoView({
+        behavior: "auto",
+        block: "start",
+      });
+    });
+  }, [activeSlide]);
 
   useEffect(() => {
     const onKeyDown = (event: KeyboardEvent) => {

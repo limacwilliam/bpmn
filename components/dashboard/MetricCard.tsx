@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { createSparklinePath } from "@/lib/sparkline";
 import { ArrowDownRight, ArrowUpRight, LucideIcon } from "lucide-react";
 import React, { useMemo } from "react";
 
@@ -25,22 +26,7 @@ export default function MetricCard({
 }: MetricCardProps) {
   // Gera o caminho do path SVG do mini-gráfico linear de forma simplificada e ultra-leve
   const sparklinePath = useMemo(() => {
-    if (!sparklineData || sparklineData.length < 2) return "";
-    
-    const width = 120;
-    const height = 30;
-    const maxVal = Math.max(...sparklineData);
-    const minVal = Math.min(...sparklineData);
-    const range = maxVal - minVal || 1;
-
-    const points = sparklineData.map((val, idx) => {
-      const x = (idx / (sparklineData.length - 1)) * width;
-      // Inverte o eixo Y pois 0 é no topo
-      const y = height - ((val - minVal) / range) * height;
-      return `${x.toFixed(1)},${y.toFixed(1)}`;
-    });
-
-    return `M ${points.join(" L ")}`;
+    return createSparklinePath(sparklineData, 120, 30);
   }, [sparklineData]);
 
   return (
@@ -114,5 +100,4 @@ export default function MetricCard({
     </div>
   );
 }
-
 

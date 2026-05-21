@@ -1,4 +1,5 @@
 import { cn } from "@/lib/utils";
+import { createSparklinePath } from "@/lib/sparkline";
 import { ArrowDownRight, ArrowUpRight, AlertTriangle, LucideIcon } from "lucide-react";
 import React, { useMemo } from "react";
 
@@ -33,22 +34,7 @@ export default function ExecutiveKPICard({
 }: ExecutiveKPICardProps) {
   // Gera o caminho do path SVG do mini-gráfico linear de forma simplificada e ultra-leve
   const sparklinePath = useMemo(() => {
-    if (!sparklineData || sparklineData.length < 2) return "";
-    
-    const width = 140;
-    const height = 40;
-    const maxVal = Math.max(...sparklineData);
-    const minVal = Math.min(...sparklineData);
-    const range = maxVal - minVal || 1;
-
-    const points = sparklineData.map((val, idx) => {
-      const x = (idx / (sparklineData.length - 1)) * width;
-      // Inverte o eixo Y pois 0 é no topo
-      const y = height - ((val - minVal) / range) * height;
-      return `${x.toFixed(1)},${y.toFixed(1)}`;
-    });
-
-    return `M ${points.join(" L ")}`;
+    return createSparklinePath(sparklineData, 140, 40);
   }, [sparklineData]);
 
   return (
@@ -138,14 +124,6 @@ export default function ExecutiveKPICard({
         {sparklinePath && (
           <div className="w-[120px] h-[32px] overflow-hidden opacity-75 group-hover:opacity-100 transition-opacity duration-300">
             <svg className="w-full h-full" viewBox="0 0 140 40">
-              {/* Sombra de preenchimento suave sob o gráfico */}
-              <defs>
-                <linearGradient id={`grad-${title.replace(/\s+/g, "")}`} x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="0%" stopColor={isPositive ? "#10B981" : "#EF4444"} stopOpacity="0.2" />
-                  <stop offset="100%" stopColor={isPositive ? "#10B981" : "#EF4444"} stopOpacity="0.0" />
-                </linearGradient>
-              </defs>
-              
               <path
                 d={sparklinePath}
                 fill="none"

@@ -1,24 +1,12 @@
 "use client";
 
+import { NAVIGATION_GROUPS } from "@/config/navigation";
 import { cn } from "@/lib/utils";
 import {
-  Activity,
-  AudioLines,
-  BookOpen,
-  BrainCircuit,
   ChevronLeft,
   ChevronRight,
-  Flame,
-  GitBranch,
-  LayoutDashboard,
-  Layers,
   LogOut,
-  Map,
-  Network,
-  Presentation,
   Search,
-  Settings,
-  SlidersHorizontal,
   UserCheck,
 } from "lucide-react";
 import Image from "next/image";
@@ -30,110 +18,6 @@ interface SidebarProps {
   collapsed: boolean;
   setCollapsed: (collapsed: boolean) => void;
 }
-
-interface NavigationItem {
-  name: string;
-  href: string;
-  icon: React.ComponentType<{ className?: string }>;
-  badge?: string;
-  badgeColor?: string;
-}
-
-interface NavigationGroup {
-  category: string;
-  items: NavigationItem[];
-}
-
-// Definição dos links de governança agrupados categoricamente conforme Prompt 03
-const NAVIGATION_GROUPS: NavigationGroup[] = [
-  {
-    category: "Operações & Dashboards",
-    items: [
-      {
-        name: "Dashboard",
-        href: "/admin/dashboard",
-        icon: LayoutDashboard,
-        badge: "Novo",
-      },
-      {
-        name: "Presentation",
-        href: "/admin/presentation",
-        icon: Presentation,
-        badge: "Friday",
-        badgeColor: "bg-accent/20 text-accent border border-accent/40 font-bold",
-      },
-      {
-        name: "Operations",
-        href: "/admin/operations",
-        icon: Activity,
-      },
-      {
-        name: "Processes",
-        href: "/admin/processes",
-        icon: GitBranch,
-      },
-      {
-        name: "BPMN",
-        href: "/admin/bpmn",
-        icon: Layers,
-      },
-    ],
-  },
-  {
-    category: "Gargalos & Desempenho",
-    items: [
-      {
-        name: "Meetings",
-        href: "/admin/meetings",
-        icon: AudioLines,
-      },
-      {
-        name: "AI Analysis",
-        href: "/admin/ai-analysis",
-        icon: BrainCircuit,
-        badge: "AI",
-        badgeColor: "bg-accent/20 text-accent border border-accent/40 font-bold",
-      },
-      {
-        name: "KPIs",
-        href: "/admin/kpis",
-        icon: SlidersHorizontal,
-      },
-      {
-        name: "Bottlenecks",
-        href: "/admin/bottlenecks",
-        icon: Flame,
-        badge: "3 Alertas",
-        badgeColor: "bg-destructive text-destructive-foreground animate-pulse",
-      },
-    ],
-  },
-  {
-    category: "Estratégia & Risco",
-    items: [
-      {
-        name: "Roadmaps",
-        href: "/admin/roadmaps",
-        icon: Map,
-      },
-      {
-        name: "Organization",
-        href: "/admin/org-structure",
-        icon: Network,
-      },
-      {
-        name: "Documentation",
-        href: "/admin/docs",
-        icon: BookOpen,
-      },
-      {
-        name: "Settings",
-        href: "/admin/settings",
-        icon: Settings,
-      },
-    ],
-  },
-];
 
 export default function Sidebar({ collapsed, setCollapsed }: SidebarProps) {
   const pathname = usePathname();
