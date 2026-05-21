@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
-import { Brain, CheckCircle2, AlertTriangle, Zap, UserPlus } from "lucide-react";
+import { aiOperationalInsights } from "@/lib/enterprise-operational-data";
+import { Brain, CheckCircle2, AlertTriangle, Zap } from "lucide-react";
 import React, { useState } from "react";
 
 interface AIInsight {
@@ -13,28 +14,21 @@ interface AIInsight {
   actionTaken: boolean;
 }
 
-const INITIAL_INSIGHTS: AIInsight[] = [
-  {
-    id: "INS-901",
-    type: "anomaly",
-    title: "Sobrecarga Crítica no Almoxarifado",
-    source: "Mapeamento Logística",
-    description: "Volume de switches expedidos de forma manual superou em 120% a capacidade média de rastreamento do setor.",
-    impactMetric: "Aumento de 36h de latência de frete para contas VIP",
-    buttonText: "Ativar Automação RFID",
-    actionTaken: false,
-  },
-  {
-    id: "INS-902",
-    type: "optimization",
-    title: "Economia de SLA no NOC Técnico",
-    source: "Evolução do TO BE",
-    description: "Substituição da etapa CLI manual pela geração automática de script pode economizar até 48h semanais de analistas.",
-    impactMetric: "Ganhos estimados de R$ 12.000 / semana",
-    buttonText: "Configurar Service Task",
-    actionTaken: false,
-  },
-];
+const INITIAL_INSIGHTS: AIInsight[] = aiOperationalInsights.slice(0, 4).map((insight) => ({
+  id: insight.id,
+  type:
+    insight.category === "risk_prediction" || insight.category === "customer_risk"
+      ? "prediction"
+      : insight.category === "bottleneck"
+        ? "anomaly"
+        : "optimization",
+  title: insight.title,
+  source: `${insight.category.replace("_", " ")} • ${insight.confidence}% confidence`,
+  description: insight.evidence,
+  impactMetric: insight.businessImpact,
+  buttonText: insight.recommendation,
+  actionTaken: false,
+}));
 
 export default function AIInsightCard() {
   const [insights, setInsights] = useState<AIInsight[]>(INITIAL_INSIGHTS);
@@ -69,9 +63,9 @@ export default function AIInsightCard() {
           let typeLabel = "Otimização";
           let typeIcon = <Zap className="w-3.5 h-3.5" />;
 
-          if (insight.type === "anomaly") {
+          if (insight.type === "anomaly" || insight.type === "prediction") {
             typeColor = "text-destructive bg-destructive/10 border-destructive/20";
-            typeLabel = "Anomalia Operacional";
+            typeLabel = insight.type === "prediction" ? "Predição de Risco" : "Anomalia Operacional";
             typeIcon = <AlertTriangle className="w-3.5 h-3.5" />;
           }
 

@@ -1,9 +1,9 @@
-import { cn } from "@/lib/utils";
-import { Award, Brain, Download, HelpCircle, ShieldAlert, Sparkles, TrendingUp } from "lucide-react";
+import { executiveStorytelling } from "@/lib/enterprise-operational-data";
+import { Brain, Download, Sparkles, TrendingUp } from "lucide-react";
 import React from "react";
 
 export default function ExecutiveSummaryPanel() {
-  const healthIndex = 88.0;
+  const healthIndex = 84.0;
 
   return (
     <div className="rounded-2xl border border-border bg-[#1C1208] text-white p-6 space-y-6 select-none relative overflow-hidden shadow-xl shadow-[#1C1208]/15">
@@ -25,7 +25,7 @@ export default function ExecutiveSummaryPanel() {
 
           <div className="flex items-center gap-1 bg-white/10 px-3 py-1 rounded-full text-[9px] font-black uppercase text-white/90">
             <TrendingUp className="w-3.5 h-3.5 text-accent animate-bounce" />
-            <span>Operação Saudável (+4.8%)</span>
+            <span>Operação em evolução (+4.8%)</span>
           </div>
         </div>
 
@@ -39,11 +39,11 @@ export default function ExecutiveSummaryPanel() {
           </div>
 
           <p className="text-white/80 leading-relaxed text-xs">
-            {"A operação global da HIT segue estável com alta conformidade de SLA (96.4%). Contudo, identificamos riscos moderados no Hypercare da conta VIP da "}
+            {executiveStorytelling.thesis} {" A conformidade global de SLA está em 96.4%, mas há risco executivo concentrado na conta "}
             <span className="text-accent font-bold">Ambev</span> 
-            {", em decorrência de latências de conciliação SAP Billing, e na validação técnica de postes do "}
+            {" por conciliação SAP e no "}
             <span className="text-accent font-bold">Bradesco</span> 
-            {". Recomendamos a ativação do fluxo de automação TO BE nestes eixos para mitigar R$ 480.000 em atrito contratual."}
+            {" por validação geográfica. A recomendação executiva é acelerar os war rooms e transformar handoffs manuais em eventos governados."}
           </p>
         </div>
 

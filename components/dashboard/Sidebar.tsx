@@ -15,6 +15,7 @@ import {
   LogOut,
   Map,
   Network,
+  Presentation,
   Search,
   Settings,
   SlidersHorizontal,
@@ -53,6 +54,13 @@ const NAVIGATION_GROUPS: NavigationGroup[] = [
         href: "/admin/dashboard",
         icon: LayoutDashboard,
         badge: "Novo",
+      },
+      {
+        name: "Presentation",
+        href: "/admin/presentation",
+        icon: Presentation,
+        badge: "Friday",
+        badgeColor: "bg-accent/20 text-accent border border-accent/40 font-bold",
       },
       {
         name: "Operations",

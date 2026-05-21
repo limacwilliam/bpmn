@@ -1,5 +1,6 @@
 import { cn } from "@/lib/utils";
-import { AlertCircle, AlertTriangle, Bell, CheckCircle2, Clock, ShieldAlert, X } from "lucide-react";
+import { executiveAlerts } from "@/lib/enterprise-operational-data";
+import { AlertCircle, AlertTriangle, Bell, CheckCircle2, ShieldAlert, X } from "lucide-react";
 import React, { useState } from "react";
 
 interface OperationalAlert {
@@ -12,35 +13,15 @@ interface OperationalAlert {
   link: string;
 }
 
-const INITIAL_ALERTS: OperationalAlert[] = [
-  {
-    id: "ALT-001",
-    severity: "critical",
-    title: "Estouro de SLA iminente - Ambev Enterprise",
-    description: "Faturamento SAP travado em conciliação manual por planilha no OneDrive há mais de 112 horas.",
-    timeAgo: "Há 12 minutos",
-    owner: "William Lima",
-    link: "/admin/processes/VIP-AMB",
-  },
-  {
-    id: "ALT-002",
-    severity: "critical",
-    title: "Atraso Crítico na Validação Geográfica de Postes",
-    description: "Bradesco Centro-Oeste com 72h em fila técnica do Google Earth. Engenharia sem equipe alocada.",
-    timeAgo: "Há 42 minutos",
-    owner: "Carlos Ramos",
-    link: "/admin/processes/VIP-BBD",
-  },
-  {
-    id: "ALT-003",
-    severity: "warning",
-    title: "Alerta de KYC Cadastral Pendente",
-    description: "GPA Matriz em operação assistida com certidão negativa bloqueada por KYC Comercial.",
-    timeAgo: "Há 2 horas",
-    owner: "Mariana Costa",
-    link: "/admin/processes/VIP-GPA",
-  },
-];
+const INITIAL_ALERTS: OperationalAlert[] = executiveAlerts.map((alert) => ({
+  id: alert.id,
+  severity: alert.severity === "critical" ? "critical" : "warning",
+  title: alert.title,
+  description: `${alert.description} Ação sugerida: ${alert.suggestedAction}`,
+  timeAgo: alert.createdAt,
+  owner: alert.owner,
+  link: "/admin/processes",
+}));
 
 export default function ExecutiveAlert() {
   const [alerts, setAlerts] = useState<OperationalAlert[]>(INITIAL_ALERTS);

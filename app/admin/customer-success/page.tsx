@@ -1,7 +1,12 @@
 import React from "react";
-import { TrendingUp, Users, CheckCircle2, AlertTriangle, ShieldCheck } from "lucide-react";
+import { TrendingUp, Users, CheckCircle2, ShieldCheck } from "lucide-react";
+import { customerHealthData } from "@/lib/enterprise-operational-data";
 
 export default function CustomerSuccessPage() {
+  const avgHealth = Math.round(customerHealthData.reduce((acc, customer) => acc + customer.healthScore, 0) / customerHealthData.length);
+  const avgChurnRisk = (customerHealthData.reduce((acc, customer) => acc + customer.churnRisk, 0) / customerHealthData.length).toFixed(1);
+  const criticalCustomers = customerHealthData.filter((customer) => customer.sentiment === "churn_risk" || customer.sentiment === "watch");
+
   return (
     <div className="space-y-8 select-none">
       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
@@ -20,7 +25,7 @@ export default function CustomerSuccessPage() {
           </div>
           <div>
             <span className="text-[10px] text-muted-foreground uppercase tracking-wider block">Health Score Médio</span>
-            <span className="text-2xl font-black text-primary leading-none mt-1 block">94 / 100</span>
+            <span className="text-2xl font-black text-primary leading-none mt-1 block">{avgHealth} / 100</span>
           </div>
         </div>
 
@@ -30,7 +35,7 @@ export default function CustomerSuccessPage() {
           </div>
           <div>
             <span className="text-[10px] text-muted-foreground uppercase tracking-wider block">SLA Global Compliant</span>
-            <span className="text-2xl font-black text-emerald-600 leading-none mt-1 block">98.2%</span>
+            <span className="text-2xl font-black text-emerald-600 leading-none mt-1 block">96.4%</span>
           </div>
         </div>
 
@@ -40,7 +45,7 @@ export default function CustomerSuccessPage() {
           </div>
           <div>
             <span className="text-[10px] text-muted-foreground uppercase tracking-wider block">Clientes Protegidos</span>
-            <span className="text-2xl font-black text-primary leading-none mt-1 block">42 Contas Enterprise</span>
+            <span className="text-2xl font-black text-primary leading-none mt-1 block">{customerHealthData.length} Contas Enterprise</span>
           </div>
         </div>
       </div>
@@ -51,28 +56,37 @@ export default function CustomerSuccessPage() {
           <h3 className="font-black text-sm uppercase tracking-wider text-primary">Saúde de Contas Enterprise</h3>
         </div>
 
-        <div className="space-y-4">
-          <div className="p-4 border border-border rounded-lg bg-secondary/35 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="space-y-1">
-              <span className="font-bold text-sm text-primary block">Telecom Américas - Enterprise</span>
-              <span className="text-[10px] text-muted-foreground block font-medium">Onboarding em progresso • Mapeamento TO BE v2</span>
-            </div>
-            <div className="flex items-center gap-6 text-xs">
-              <span className="text-muted-foreground">SLA Onboarding: <strong className="text-emerald-600 font-bold">100% OK</strong></span>
-              <span className="px-3 py-1 bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 rounded-full font-black text-[9px] uppercase">Saudável</span>
-            </div>
-          </div>
+        <div className="rounded-lg border border-accent/25 bg-accent/5 p-4 text-xs font-semibold text-primary">
+          Risco médio de churn operacional: <span className="font-black text-accent">{avgChurnRisk}%</span>. Contas em watchlist: <span className="font-black text-accent">{criticalCustomers.length}</span>.
+        </div>
 
-          <div className="p-4 border border-border rounded-lg bg-secondary/35 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="space-y-1">
-              <span className="font-bold text-sm text-primary block">Banco Global S.A. - Strategic</span>
-              <span className="text-[10px] text-muted-foreground block font-medium">Faturamento integrado • SAP Conciliação Lenta</span>
-            </div>
-            <div className="flex items-center gap-6 text-xs">
-              <span className="text-muted-foreground">SLA Faturamento: <strong className="text-destructive font-black">91.5% Violado</strong></span>
-              <span className="px-3 py-1 bg-destructive/10 text-destructive rounded-full font-black text-[9px] uppercase">Risco de Churn</span>
-            </div>
-          </div>
+        <div className="space-y-4">
+          {customerHealthData.map((customer) => {
+            const isRisk = customer.sentiment === "churn_risk";
+            const isWatch = customer.sentiment === "watch";
+
+            return (
+              <div key={customer.id} className="p-4 border border-border rounded-lg bg-secondary/35 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                <div className="space-y-1">
+                  <span className="font-bold text-sm text-primary block">{customer.name}</span>
+                  <span className="text-[10px] text-muted-foreground block font-medium">{customer.stage} • {customer.operationalImpact}</span>
+                </div>
+                <div className="flex flex-wrap items-center gap-4 text-xs">
+                  <span className="text-muted-foreground">Health: <strong className={isRisk ? "text-destructive font-black" : "text-emerald-600 font-bold"}>{customer.healthScore}/100</strong></span>
+                  <span className="text-muted-foreground">Escalações: <strong className="text-primary font-bold">{customer.escalationCount}</strong></span>
+                  <span className={
+                    isRisk
+                      ? "px-3 py-1 bg-destructive/10 text-destructive rounded-full font-black text-[9px] uppercase"
+                      : isWatch
+                        ? "px-3 py-1 bg-accent/10 text-accent rounded-full font-black text-[9px] uppercase"
+                        : "px-3 py-1 bg-emerald-100 text-emerald-800 dark:bg-emerald-950/40 dark:text-emerald-300 rounded-full font-black text-[9px] uppercase"
+                  }>
+                    {isRisk ? "Risco de Churn" : isWatch ? "Watchlist" : "Saudável"}
+                  </span>
+                </div>
+              </div>
+            );
+          })}
         </div>
       </div>
     </div>

@@ -2,8 +2,6 @@
 
 import {
   Activity,
-  AlertTriangle,
-  ArrowRight,
   Compass,
   Filter,
   GitBranch,
@@ -17,81 +15,31 @@ import Link from "next/link";
 import React, { useMemo, useState } from "react";
 import ProcessCard from "@/components/process/ProcessCard";
 import ProcessTable, { ProcessTableItem } from "@/components/process/ProcessTable";
+import { enterpriseProcesses } from "@/lib/enterprise-operational-data";
 import { cn } from "@/lib/utils";
 
-// Massa de dados realistas e alinhada com as informações operacionais da HIT
-const PROCESS_REGISTRY_DATA: ProcessTableItem[] = [
-  {
-    id: "PRC-001",
-    title: "Onboarding de Clientes Enterprise",
-    department: "Customer Success",
-    owner: "Mariana Souza",
-    status: "ACTIVE",
-    maturity: 4,
-    slaStatus: "STABLE",
-    riskLevel: "LOW",
-    lastUpdate: "Ontem, às 16:30",
-    type: "TO_BE",
-  },
-  {
-    id: "PRC-002",
-    title: "Faturamento e Cobrança Automatizada",
-    department: "Faturamento",
-    owner: "William Lima",
-    status: "OPTIMIZING",
-    maturity: 2,
-    slaStatus: "CRITICAL",
-    riskLevel: "CRITICAL",
-    lastUpdate: "Há 4 horas",
-    type: "AS_IS",
-  },
-  {
-    id: "PRC-003",
-    title: "Suporte e Provisionamento Cloud",
-    department: "Tecnologia / TI",
-    owner: "Carlos Ramos",
-    status: "ACTIVE",
-    maturity: 4,
-    slaStatus: "STABLE",
-    riskLevel: "LOW",
-    lastUpdate: "Há 3 dias",
-    type: "TO_BE",
-  },
-  {
-    id: "PRC-004",
-    title: "Aprovação de Orçamentos SAP",
-    department: "Financeiro",
-    owner: "Beatriz Mello",
-    status: "DRAFT",
-    maturity: 1,
-    slaStatus: "DELAYED",
-    riskLevel: "HIGH",
-    lastUpdate: "Há 5 dias",
-    type: "AS_IS",
-  },
-  {
-    id: "PRC-005",
-    title: "Auditoria de Compliance KYC",
-    department: "Compliance",
-    owner: "Mariana Souza",
-    status: "ACTIVE",
-    maturity: 5,
-    slaStatus: "STABLE",
-    riskLevel: "LOW",
-    lastUpdate: "Há 2 horas",
-    type: "TO_BE",
-  },
-];
+const PROCESS_REGISTRY_DATA: ProcessTableItem[] = enterpriseProcesses.map((process) => ({
+  id: process.id,
+  title: process.name,
+  department: process.department,
+  owner: process.owner,
+  status: process.status === "PAUSED" ? "DEPRECATED" : process.status,
+  maturity: process.maturityLevel,
+  slaStatus: process.slaStatus,
+  riskLevel:
+    process.slaStatus === "CRITICAL"
+      ? "CRITICAL"
+      : process.slaStatus === "DELAYED"
+        ? "HIGH"
+        : process.risks.length > 1
+          ? "MEDIUM"
+          : "LOW",
+  lastUpdate: process.lastUpdate,
+  type: process.type,
+}));
 
 // Departamentos únicos para filtro
-const DEPARTMENTS = [
-  "ALL",
-  "Customer Success",
-  "Faturamento",
-  "Tecnologia / TI",
-  "Financeiro",
-  "Compliance",
-];
+const DEPARTMENTS = ["ALL", ...Array.from(new Set(PROCESS_REGISTRY_DATA.map((item) => item.department)))];
 
 export default function ProcessesPage() {
   const [viewMode, setViewMode] = useState<"TABLE" | "GRID">("TABLE");
@@ -421,4 +369,3 @@ export default function ProcessesPage() {
     </div>
   );
 }
-

@@ -3,65 +3,18 @@ import {
   ArrowUp,
   SlidersHorizontal,
   Plus,
-  Search,
   CheckCircle2,
   AlertTriangle,
 } from "lucide-react";
 import React from "react";
+import { enterpriseKpis } from "@/lib/enterprise-operational-data";
 
-// Mock de dados de KPIs operacionais e SLAs associados
-const KPI_REGISTRY = [
-  {
-    id: "KPI-001",
-    name: "Tempo de Onboarding de Clientes",
-    process: "Onboarding de Clientes",
-    target: 24, // horas
-    current: 20.8, // horas
-    unit: "h",
-    slaThreshold: 24, // acima disso estoura SLA
-    status: "OK",
-    trend: "-12.5%", // queda de tempo é bom
-    isPositive: true,
-  },
-  {
-    id: "KPI-002",
-    name: "Latência de Conciliação SAP",
-    process: "Faturamento Automatizado",
-    target: 1, // hora
-    current: 2.2, // horas
-    unit: "h",
-    slaThreshold: 1,
-    status: "VIOLATED",
-    trend: "+120.0%", // aumento de tempo é ruim
-    isPositive: false,
-  },
-  {
-    id: "KPI-003",
-    name: "Tempo de Resposta de Suporte N3",
-    process: "Suporte e Provisionamento Cloud",
-    target: 4, // horas
-    current: 3.1, // horas
-    unit: "h",
-    slaThreshold: 4,
-    status: "OK",
-    trend: "-8.3%",
-    isPositive: true,
-  },
-  {
-    id: "KPI-004",
-    name: "Taxa de Sucesso de Deploy",
-    process: "Suporte e Provisionamento Cloud",
-    target: 98.0, // %
-    current: 96.5, // %
-    unit: "%",
-    slaThreshold: 97.0, // abaixo disso é alerta
-    status: "WARNING",
-    trend: "-1.5%",
-    isPositive: false,
-  },
-];
+const KPI_REGISTRY = enterpriseKpis;
 
 export default function KpisPage() {
+  const healthy = KPI_REGISTRY.filter((kpi) => kpi.status === "OK").length;
+  const violated = KPI_REGISTRY.filter((kpi) => kpi.status === "VIOLATED").length;
+
   return (
     <div className="space-y-8 select-none">
       {/* 1. Header do Módulo */}
@@ -92,7 +45,9 @@ export default function KpisPage() {
           </div>
           <div>
             <span className="text-[10px] text-muted-foreground uppercase tracking-wider block">SLAs Saudáveis</span>
-            <span className="text-2xl font-black text-primary leading-none mt-1 block">75% (3/4)</span>
+            <span className="text-2xl font-black text-primary leading-none mt-1 block">
+              {Math.round((healthy / KPI_REGISTRY.length) * 100)}% ({healthy}/{KPI_REGISTRY.length})
+            </span>
           </div>
         </div>
 
@@ -103,7 +58,7 @@ export default function KpisPage() {
           </div>
           <div>
             <span className="text-[10px] text-muted-foreground uppercase tracking-wider block">Estouros Ativos</span>
-            <span className="text-2xl font-black text-destructive leading-none mt-1 block">1 Processo</span>
+            <span className="text-2xl font-black text-destructive leading-none mt-1 block">{violated} Processos</span>
           </div>
         </div>
 
@@ -136,7 +91,7 @@ export default function KpisPage() {
             <tbody className="divide-y divide-border font-medium">
               {KPI_REGISTRY.map((kpi, idx) => {
                 // Calcula a porcentagem do progresso para a barra visual
-                const percentage = Math.min((kpi.current / kpi.target) * 100, 100);
+                const percentage = kpi.unit === "%" ? Math.min(kpi.current, 100) : Math.min((kpi.current / kpi.target) * 100, 100);
                 
                 return (
                   <tr key={idx} className="hover:bg-muted/40 transition-colors">
