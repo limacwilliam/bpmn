@@ -1,0 +1,205 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  SUPER_ADMIN
+  EXECUTIVE
+  OPERATIONAL_LEAD
+  ANALYST
+  VIEWER
+}
+
+enum ProcessStatus {
+  DRAFT
+  ACTIVE
+  OPTIMIZING
+  DEPRECATED
+}
+
+enum RiskSeverity {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+model User {
+  id            String        @id @default(uuid())
+  email         String        @unique
+  name          String
+  role          Role          @default(VIEWER)
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  profileImage  String?
+  departmentId  String?
+  department    Department?   @relation(fields: [departmentId], references: [id])
+  processes     Process[]     @relation("ProcessOwner")
+  audits        AuditLog[]
+  comments      Comment[]
+}
+
+model Department {
+  id          String       @id @default(uuid())
+  name        String       @unique
+  managerId   String?
+  users       User[]
+  processes   Process[]
+  risks       Risk[]
+  kpis        KPI[]
+}
+
+model Process {
+  id             String         @id @default(uuid())
+  title          String
+  description    String?
+  status         ProcessStatus  @default(DRAFT)
+  ownerId        String
+  owner          User           @relation("ProcessOwner", fields: [ownerId], references: [id])
+  departmentId   String
+  department     Department     @relation(fields: [departmentId], references: [id])
+  asIsModel      String?        // XML or JSON representation
+  toBeModel      String?        // Target model
+  createdAt      DateTime       @default(now())
+  updatedAt      DateTime       @updatedAt
+  workflows      BPMNWorkflow[]
+  bottlenecks    Bottleneck[]
+  kpis           KPI[]
+}
+
+model BPMNWorkflow {
+  id          String   @id @default(uuid())
+  processId   String
+  process     Process  @relation(fields: [processId], references: [id], onDelete: Cascade)
+  version     Int      @default(1)
+  xmlData     String   // Raw BPMN 2.0 XML
+  jsonData    String?  // Layout and visual details
+  createdById String
+  createdAt   DateTime @default(now())
+}
+
+model KPI {
+  id           String       @id @default(uuid())
+  name         String
+  target       Float
+  current      Float
+  unit         String       // e.g., "%", "hours", "USD"
+  slaThreshold Float?       // Warning trigger level
+  processId    String?
+  process      Process?     @relation(fields: [processId], references: [id])
+  departmentId String?
+  department   Department?  @relation(fields: [departmentId], references: [id])
+  history      KPIHistory[]
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
+
+model KPIHistory {
+  id        String   @id @default(uuid())
+  kpiId     String
+  kpi       KPI      @relation(fields: [kpiId], references: [id], onDelete: Cascade)
+  value     Float
+  loggedAt  DateTime @default(now())
+}
+
+model Bottleneck {
+  id          String   @id @default(uuid())
+  processId   String
+  process     Process  @relation(fields: [processId], references: [id], onDelete: Cascade)
+  elementId   String   // BPMN element where bottleneck is located
+  severity    Float    // 0.0 - 1.0 scale
+  description String
+  impactScore Float    // Metric based on latency/SLA delay
+  detectedAt  DateTime @default(now())
+  resolvedAt  DateTime?
+}
+
+model Risk {
+  id           String       @id @default(uuid())
+  title        String
+  description  String
+  severity     RiskSeverity @default(MEDIUM)
+  mitigation   String?
+  departmentId String?
+  department   Department?  @relation(fields: [departmentId], references: [id])
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+}
+
+model MeetingTranscript {
+  id          String   @id @default(uuid())
+  title       String
+  date        DateTime @default(now())
+  rawText     String
+  summary     String?
+  actionItems String?  // JSON representation of action items
+  audioUrl    String?
+  createdAt   DateTime @default(now())
+}
+
+model AuditLog {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  action    String   // e.g. "PROCESS_UPDATE", "RISK_CREATE"
+  details   String
+  ipAddress String?
+  createdAt DateTime @default(now())
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id])
+  entityType String  // "PROCESS", "KPI", "RISK"
+  entityId   String
+  content   String
+  createdAt DateTime @default(now())
+}
+
+model AITranscript {
+  id            String      @id @default(uuid())
+  fileName      String
+  fileSize      Int
+  meetingTitle  String
+  department    String
+  processTag    String?
+  uploadedAt    DateTime    @default(now())
+  content       String      @db.Text
+  analysis      AIAnalysis?
+}
+
+model AIAnalysis {
+  id              String       @id @default(uuid())
+  transcriptId    String       @unique
+  transcript      AITranscript @relation(fields: [transcriptId], references: [id], onDelete: Cascade)
+  healthScore     Int
+  maturityLevel   String
+  summary         String       @db.Text
+  verdict         String       @db.Text
+  bottlenecks     Json
+  risks           Json
+  processSteps    Json
+  recommendations Json
+  createdAt       DateTime     @default(now())
+}
+
+model AIMemoryContext {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  value       String   @db.Text
+  description String?
+  updatedAt   DateTime @updatedAt
+}
+
+model AIOperationalPattern {
+  id          String   @id @default(uuid())
+  patternName String
+  description String   @db.Text
+  frequency   Int      @default(1)
+  detectedAt  DateTime @default(now())
+}

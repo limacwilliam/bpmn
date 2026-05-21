@@ -1,0 +1,1283 @@
+1. VISÃO GERAL DO TEMPLATE
+
+Strategic summary
+
+HIT Website is a Next.js 15 App Router marketing platform with a country-locale i18n model (pt-br, es-co, en-us, etc.), a Supabase-backed CMS/admin, and a dual UI architecture:
+
+Layer
+
+Purpose
+
+Style approach
+
+Marketing site
+
+Public pages under app/[locale]/
+
+Custom Tailwind + brand tokens
+
+shadcn/ui kit
+
+Reusable primitives in components/ui/
+
+Radix + CVA, semantic tokens
+
+Admin CMS
+
+/admin/* routes
+
+Separate gray/orange UI, client-heavy
+
+Visual philosophy
+
+Enterprise B2B telecom/IT — authoritative, not playful
+
+High contrast — charcoal brown #1C1208 + energetic orange #F15A22
+
+Warm neutrals — off-white backgrounds with brown-tinted grays (not cold blue-gray)
+
+Bold typography — font-black (900) for headlines; tight tracking
+
+Rounded, approachable CTAs — pill buttons (rounded-full) on marketing; sharper rounded-md in admin/forms
+
+Design objective
+
+Convert visitors into leads across 7 regional markets while maintaining a single brand identity. Pages are SEO-first (CMS metadata, JSON-LD, static/ISR generation) with minimal client JS on marketing routes.
+
+Feeling conveyed
+
+Attribute
+
+Expression
+
+Trust
+
+Dark charcoal, structured grids, partner logos
+
+Energy
+
+Orange accents, animated stats, video heroes
+
+Global reach
+
+Region picker, flags, locale-specific content
+
+Modern enterprise
+
+Glass navbar, backdrop blur, subtle page transitions
+
+2. DESIGN SYSTEM COMPLETO
+
+Colors
+
+Semantic tokens (source of truth: app/globals.css)
+
+All colors use HSL without the hsl() wrapper — consumed as hsl(var(--token)).
+
+Token
+
+HSL
+
+Hex (approx.)
+
+Role
+
+--background
+
+0 0% 99%
+
+#FCFCFC
+
+Page background
+
+--foreground
+
+30 30% 12%
+
+#281F17
+
+Body text
+
+--primary
+
+30 56% 7%
+
+#1C1208
+
+Brand charcoal
+
+--primary-foreground
+
+0 0% 100%
+
+#FFFFFF
+
+Text on primary
+
+--secondary
+
+30 20% 96%
+
+#F7F5F3
+
+Secondary surfaces
+
+--muted
+
+30 15% 94%
+
+#F2F0EE
+
+Muted backgrounds
+
+--muted-foreground
+
+30 10% 46%
+
+#7A7268
+
+Secondary text
+
+--accent
+
+16 88% 54%
+
+#F15A22
+
+Brand orange
+
+--accent-foreground
+
+0 0% 100%
+
+#FFFFFF
+
+Text on accent
+
+--destructive
+
+0 84% 60%
+
+#EF4444
+
+Errors
+
+--border / --input
+
+30 15% 88%
+
+#E5E0DB
+
+Borders
+
+--ring
+
+16 88% 54%
+
+#F15A22
+
+Focus rings
+
+Brand aliases (legacy naming — still in use)
+
+Token
+
+Maps to
+
+--navy
+
+Same as --primary
+
+--cyan
+
+Same as --accent (name is legacy)
+
+--cyan-hover
+
+#D94E1A — darker orange for hover
+
+--off-white
+
+Same as --secondary
+
+Hardcoded colors (not yet tokenized — consolidate in new projects)
+
+Hex
+
+Usage
+
+#f5f4f2
+
+Section backgrounds (about, solutions, blog)
+
+#f0f0f0
+
+CTA banner
+
+#1e2d3d
+
+Dark feature cards
+
+#0e0e0e
+
+Navbar mega menu panel
+
+#25D366
+
+WhatsApp FAB
+
+#b3b3b3
+
+Navbar bottom border
+
+Gray scale (warm-tinted, not neutral)
+
+Background  → #FCFCFC (99%)Secondary   → #F7F5F3 (96%)Muted       → #F2F0EE (94%)Border      → #E5E0DB (88%)Muted text  → #7A7268 (46%)Foreground  → #281F17 (12%)Primary     → #1C1208 (7%) 
+
+Gradients
+
+Hero overlays: bg-gradient-to-t from-black/70 via-black/30 to-transparent
+
+Blog hero: radial accent rgba(241, 90, 34, 0.x)
+
+CTA banner: image + dark gradient overlay
+
+Dark mode
+
+darkMode: ["class"] is configured in Tailwind, but no .dark {} token block exists. The site is light-only in production.
+
+Typography
+
+Font family
+
+Anek Latin — loaded via next/font/google, exposed as CSS variable --font-anek-latin.
+
+const anekLatin = Anek_Latin({  subsets: ['latin'],  variable: '--font-anek-latin',  display: 'swap',}); 
+
+Tailwind: font-sans → ["var(--font-anek-latin)", "system-ui", "sans-serif"]
+
+Type scale (marketing conventions)
+
+Element
+
+Classes
+
+Hero H1
+
+text-4xl md:text-5xl lg:text-6xl font-black leading-[1.1]
+
+Section H2
+
+text-3xl md:text-4xl font-black leading-tight
+
+Subsection H2
+
+text-2xl md:text-3xl font-black
+
+Legal H1
+
+text-4xl md:text-5xl font-black
+
+Body
+
+text-sm / text-base leading-relaxed
+
+Muted body
+
+text-muted-foreground text-sm leading-relaxed
+
+Stats
+
+text-5xl md:text-6xl font-black
+
+Eyebrow/label
+
+text-xs font-semibold uppercase tracking-widest
+
+Nav links
+
+text-sm font-semibold
+
+Font weights
+
+Weight
+
+Tailwind
+
+Usage
+
+900
+
+font-black
+
+Marketing headings, stats
+
+700
+
+font-bold
+
+Base heading rule (h1–h6)
+
+600
+
+font-semibold
+
+CTAs, nav, labels
+
+500
+
+font-medium
+
+shadcn UI, .nav-link
+
+Base rules (globals.css)
+
+body { @apply bg-background text-foreground font-sans antialiased; }h1, h2, h3, h4, h5, h6 { @apply font-bold tracking-tight; } 
+
+Spacing
+
+Custom layout utilities
+
+Utility
+
+Definition
+
+.section-padding
+
+py-16 md:py-24 px-4 md:px-8
+
+.container-hit
+
+max-w-7xl mx-auto px-4 md:px-8
+
+.container (Tailwind)
+
+centered, padding: 2rem, max 1400px at 2xl
+
+Common spacing patterns
+
+Pattern
+
+Values
+
+Hero padding
+
+py-36 md:py-44 px-6 sm:px-8 md:px-12 lg:px-16
+
+Section gaps
+
+gap-10, gap-12, mb-14
+
+Marketing CTA
+
+px-7 py-3.5
+
+Card padding
+
+p-6, p-10 md:p-14
+
+Navbar height
+
+h-16 md:h-20
+
+Icon containers
+
+w-14 h-14
+
+Base unit: Tailwind default 4px scale (1 = 4px). No custom spacing tokens.
+
+Grid
+
+Layout
+
+Classes
+
+3-column features
+
+grid grid-cols-1 md:grid-cols-3 gap-10 md:gap-12
+
+2-column split
+
+grid grid-cols-1 md:grid-cols-2 gap-12 items-center
+
+Stats row
+
+grid grid-cols-2 md:grid-cols-4 gap-8
+
+Footer offices
+
+grid grid-cols-2 md:grid-cols-4 gap-8 md:gap-10
+
+Contact form
+
+grid grid-cols-2 gap-8
+
+Max widths
+
+Class
+
+Width
+
+Usage
+
+max-w-7xl
+
+1280px
+
+Primary container
+
+max-w-5xl
+
+1024px
+
+Solution hero inner
+
+max-w-2xl
+
+672px
+
+Hero text, headings
+
+max-w-sm
+
+384px
+
+CTA text column
+
+Breakpoints
+
+Tailwind defaults (primary breakpoint: md: at 768px):
+
+Breakpoint
+
+Min width
+
+sm
+
+640px
+
+md
+
+768px
+
+lg
+
+1024px
+
+xl
+
+1280px
+
+2xl
+
+1536px
+
+Custom: .container caps at 1400px at 2xl.
+
+Mobile detection hook: hooks/use-mobile.tsx → MOBILE_BREAKPOINT = 768.
+
+Border radius
+
+Token
+
+--radius: 0.5rem; /* 8px */ 
+
+Class
+
+Computed
+
+rounded-lg
+
+8px
+
+rounded-md
+
+6px
+
+rounded-sm
+
+4px
+
+Marketing conventions (override token defaults)
+
+Class
+
+Usage
+
+rounded-full
+
+Primary CTAs, badges, FAB
+
+rounded-2xl
+
+Cards, images, mega menu
+
+rounded-3xl
+
+Hero sections, stats blocks
+
+rounded-xl
+
+Icon boxes, blog cards
+
+Shadows
+
+No custom shadow tokens — Tailwind defaults + ad-hoc values:
+
+Class
+
+Usage
+
+shadow-sm
+
+Cards, tabs
+
+shadow-md
+
+Hover cards, dropdowns
+
+shadow-lg
+
+Navbar (scrolled), dialogs, toasts
+
+shadow-xl
+
+Hero images, tooltips
+
+shadow-2xl
+
+Mega menu, modals
+
+shadow-black/10
+
+Navbar scrolled state
+
+shadow-[#25D366]/35
+
+WhatsApp FAB glow
+
+Design tokens — copy-paste reference
+
+/* app/globals.css — :root block */:root {  --background: 0 0% 99%;  --foreground: 30 30% 12%;  --primary: 30 56% 7%;           /* #1C1208 */  --accent: 16 88% 54%;           /* #F15A22 */  --accent-hover: 16 88% 47%;     /* #D94E1A — use as --cyan-hover */  --muted-foreground: 30 10% 46%;  --border: 30 15% 88%;  --radius: 0.5rem;  --ring: 16 88% 54%;} // tailwind.config.ts — extend patterncolors: {  primary: { DEFAULT: "hsl(var(--primary))", foreground: "hsl(var(--primary-foreground))" },  accent:  { DEFAULT: "hsl(var(--accent))",  foreground: "hsl(var(--accent-foreground))" },  // ...}borderRadius: {  lg: "var(--radius)",  md: "calc(var(--radius) - 2px)",  sm: "calc(var(--radius) - 4px)",} 
+
+3. PADRÃO DE COMPONENTES
+
+Buttons
+
+Marketing primary CTA (dominant pattern)
+
+<Link  href="/contact"  className="bg-accent text-white px-7 py-3.5 rounded-full font-semibold             hover:bg-cyan-hover transition-colors text-sm">  Contact us</Link> 
+
+State
+
+Behavior
+
+Default
+
+bg-accent text-white
+
+Hover
+
+hover:bg-cyan-hover or hover:opacity-90
+
+Focus
+
+Browser default (no explicit ring on marketing CTAs)
+
+Disabled
+
+disabled:opacity-50
+
+Marketing outline CTA
+
+className="border-2 border-accent text-accent rounded-full font-semibold           hover:bg-accent hover:text-white transition-colors" 
+
+shadcn Button (components/ui/button.tsx)
+
+Variant
+
+Classes
+
+default
+
+bg-primary text-primary-foreground hover:bg-primary/90
+
+destructive
+
+bg-destructive
+
+outline
+
+border border-input hover:bg-accent
+
+secondary
+
+bg-secondary
+
+ghost
+
+hover:bg-accent
+
+link
+
+text-primary underline-offset-4
+
+Size
+
+Height
+
+default
+
+h-10 px-4
+
+sm
+
+h-9 px-3
+
+lg
+
+h-11 px-8
+
+icon
+
+h-10 w-10
+
+States: focus-visible:ring-2 ring-ring, disabled:pointer-events-none disabled:opacity-50
+
+Rule: Marketing pages use native <Link>/<a> with Tailwind — not shadcn Button.
+
+Inputs
+
+Marketing ContactForm (underline style)
+
+<input  className="w-full border-0 border-b border-border bg-transparent             focus:border-accent focus:outline-none py-2 text-sm"/> 
+
+Error state: red border + inline error message below field.
+
+shadcn Input
+
+className="flex h-10 w-full rounded-md border border-input bg-background           px-3 py-2 text-sm focus-visible:ring-2 focus-visible:ring-ring           disabled:opacity-50" 
+
+Custom pickers (ContactForm)
+
+Dial-code picker: searchable dropdown, flag images, hover:bg-muted
+
+Country picker: same pattern for 7 operating countries
+
+No-JS fallback: native <select> via CSS @media (scripting: none)
+
+Cards
+
+Marketing solution card
+
+<Link className="group rounded-2xl p-6 border border-border                 hover:border-accent hover:shadow-md transition-all">  <div className="w-14 h-14 rounded-xl bg-accent/10 flex items-center justify-center">    <Icon className="text-accent" />  </div>  <h3 className="font-bold text-lg mt-4 group-hover:text-accent">Title</h3>  <p className="text-muted-foreground text-sm mt-2">Description</p></Link> 
+
+Blog card
+
+Featured: h-[340px] md:h-[460px], image with group-hover:scale-105
+
+Grid: accent border on hover, image scale transition
+
+shadcn Card
+
+className="rounded-lg border bg-card text-card-foreground shadow-sm"// Subcomponents: CardHeader (p-6), CardTitle, CardDescription, CardContent, CardFooter 
+
+Navbar (components/Navbar.tsx)
+
+Property
+
+Value
+
+Position
+
+fixed top-0 z-50 w-full
+
+Height
+
+h-16 md:h-20
+
+Background
+
+bg-black/[0.145] backdrop-blur-[50px] (glass)
+
+Scrolled
+
+Adds shadow-lg shadow-black/10 after 10px scroll
+
+Desktop nav
+
+hidden md:flex
+
+Mobile
+
+md:hidden hamburger + accordion
+
+Mega menu
+
+760px dark panel #0e0e0e, animate-mega-in
+
+Active link
+
+text-accent
+
+Region picker
+
+Flag grid, bg-accent/15 border-accent/40 when selected
+
+Footer (components/Footer.tsx)
+
+White background, border-t
+
+Office grid: grid-cols-2 md:grid-cols-4
+
+Social icons: circular, hover:bg-accent
+
+Copy buttons with Tooltip on hover
+
+Region-aware WhatsApp link via cookie
+
+Modals & overlays
+
+Component
+
+Implementation
+
+shadcn Dialog
+
+Radix, fade + zoom + slide (tailwindcss-animate)
+
+Cookie consent
+
+createPortal, fixed bottom-left, z-[10000], shadcn Switch/Collapsible
+
+Image lightbox
+
+Custom overlay + framer-motion (only framer usage in app)
+
+Mega menu backdrop
+
+bg-black/30 backdrop-blur-sm, toggled via data-open
+
+Toasts
+
+Radix toast via hooks/use-toast.ts + components/ui/toaster.tsx
+
+Wired in components/Providers.tsx
+
+Variants: default, destructive (errors)
+
+Used by ContactForm, CopyButton
+
+Tooltips
+
+Radix Tooltip via components/ui/tooltip.tsx
+
+Used in Footer copy buttons, ContactForm
+
+Tabs, Accordions
+
+shadcn Tabs/Accordion available in components/ui/
+
+Navbar mobile menu uses custom accordion (not shadcn)
+
+Admin CMS uses custom language tabs (bg-orange-500 active)
+
+Loaders & skeletons
+
+Route-level loading (app/[locale]/**/loading.tsx)
+
+Full-page animate-pulse skeleton matching page layout — very detailed (home ~160 lines).
+
+shadcn Skeleton
+
+className="animate-pulse rounded-md bg-muted" 
+
+Used in admin sidebar, not marketing.
+
+Button loading
+
+Text swap pattern: 'Submitting...' + disabled={loading} — no spinner component.
+
+Empty states
+
+Context
+
+Pattern
+
+Blog (no posts)
+
+text-center py-20 text-muted-foreground + i18n message
+
+404
+
+Centered 404, accent link home
+
+Admin
+
+text-gray-400 centered text
+
+FloatingWhatsAppButton
+
+// Fixed FAB, region-aware hrefclassName="fixed bottom-5 right-5 md:bottom-6 md:right-6 z-40           bg-[#25D366] rounded-full shadow-lg shadow-[#25D366]/35           animate-whatsapp-fab-in"// Hidden when mobile nav is open// Pulse ring: animate-whatsapp-fab-pulse 
+
+4. ARQUITETURA FRONTEND
+
+Stack
+
+Layer
+
+Technology
+
+Framework
+
+Next.js 15.5 (App Router)
+
+UI
+
+React 18, Tailwind CSS 3.4, shadcn/ui (Radix)
+
+i18n
+
+next-intl 4 — 7 country locales
+
+Backend
+
+Supabase (@supabase/ssr)
+
+Client cache
+
+TanStack React Query 5
+
+Forms
+
+react-hook-form + zod (admin); custom (marketing)
+
+Animation
+
+CSS-first; framer-motion (lightbox only)
+
+Analytics
+
+Vercel Analytics, Speed Insights, GA
+
+Package manager
+
+Bun
+
+Recommended folder structure
+
+project/├── app/│   ├── layout.tsx              # Passthrough (no <html>/<body>)│   ├── globals.css             # Design tokens + global utilities│   ├── [locale]/               # Public i18n routes│   │   ├── layout.tsx          # Shell: Navbar, Footer, providers│   │   ├── page.tsx            # Home│   │   ├── loading.tsx         # Route skeleton│   │   └── {feature}/          # Feature pages│   ├── admin/                  # CMS (no locale prefix)│   └── api/                    # Route handlers├── components/│   ├── ui/                     # shadcn primitives (~48 components)│   ├── Navbar.tsx              # Global chrome│   ├── Footer.tsx│   ├── Providers.tsx           # React Query, Tooltip, Toaster│   └── {Feature}Client.tsx     # Client islands├── hooks/│   ├── useAuth.ts│   ├── use-mobile.tsx│   └── use-toast.ts├── lib/│   ├── supabase-server.ts      # SSR client│   ├── supabase-client.ts      # Browser client│   ├── utils.ts                # cn() helper│   └── {domain}-*.ts           # Service layer├── i18n/│   ├── routing.ts│   ├── request.ts│   └── messages/{locale}.json├── data/                       # Static content└── public/                     # Static assets, sitemaps 
+
+Routing pattern
+
+Public:  /{locale}/{page}     → app/[locale]/{page}/page.tsxAdmin:   /admin/{module}      → app/admin/{module}/page.tsxAPI:     /api/{endpoint}      → app/api/{endpoint}/route.ts 
+
+Locales: ['es-co', 'es-mx', 'es-es', 'es-pa', 'pt-br', 'pt-pt', 'en-us']
+
+Default: pt-br, prefix always, detection off.
+
+Componentization strategy
+
+Type
+
+Pattern
+
+Pages
+
+Async Server Components — fetch data, render sections
+
+Client islands
+
+*Client.tsx suffix for interactivity
+
+UI primitives
+
+shadcn in components/ui/
+
+Global chrome
+
+Navbar, Footer, CookieConsent in layout
+
+SEO
+
+generateMetadata + <JsonLd /> per page
+
+State management
+
+Concern
+
+Mechanism
+
+Server data
+
+RSC + Supabase server client
+
+Client cache
+
+React Query (admin)
+
+UI state
+
+useState in client components
+
+Mobile nav
+
+React Context (MobileNavContext)
+
+Auth
+
+useAuth hook + Supabase listener
+
+Locale/region
+
+URL segment + cookie hit_region
+
+SSR/CSR strategy
+
+Default: Server-first (RSC) — most pages have no 'use client'
+
+Client islands — Navbar, ContactForm, SolutionDetailClient, admin pages
+
+SSG: generateStaticParams on solutions + blog slugs
+
+ISR: revalidate = 3600 on blog posts
+
+Cache: React cache() for SEO dedup; image minimumCacheTTL: 31536000
+
+Import conventions
+
+import Navbar from '@/components/Navbar';import { createSupabaseServer } from '@/lib/supabase-server';import { getTranslations } from 'next-intl/server';import { cn } from '@/lib/utils';import { Button } from '@/components/ui/button'; 
+
+Path alias: @/* → project root.
+
+Naming conventions
+
+Type
+
+Convention
+
+Example
+
+Routes
+
+kebab-case folders
+
+privacy-policy/
+
+Components
+
+PascalCase
+
+ContactForm.tsx
+
+Client components
+
+*Client.tsx suffix
+
+BlogClient.tsx
+
+Lib modules
+
+kebab-case
+
+page-seo.ts
+
+i18n files
+
+{locale}.json
+
+pt-br.json
+
+CSS utilities
+
+kebab-case
+
+.container-hit, .section-padding
+
+5. PADRÃO DE PÁGINAS
+
+Marketing page template
+
+Every public page follows this structure:
+
+// 1. Metadataexport async function generateMetadata({ params }) {  return cmsSeoPayloadToMetadata(await getCmsSeoMetadataPayload(pageKey, locale));}// 2. Server Componentexport default async function Page({ params: { locale } }) {  const t = await getTranslations({ locale });  const data = await fetchFromSupabase();  return (    <>      <JsonLd data={structuredData} />      {/* Hero section */}      <section className="relative min-h-[480px] rounded-3xl mx-3 md:mx-6 overflow-hidden">        <Image ... />        <div className="absolute inset-0 bg-gradient-to-t from-black/70 ..." />        <div className="relative z-10 container-hit py-36 md:py-44">          <h1 className="text-4xl md:text-5xl lg:text-6xl font-black text-white">            {t('title')}          </h1>        </div>      </section>      {/* Content sections */}      <section className="section-padding bg-[#f5f4f2]">        <div className="container-hit">          {/* grid content */}        </div>      </section>      {/* Bottom CTA */}      <CTABanner locale={locale} />    </>  );} 
+
+Page types
+
+Type
+
+Pattern
+
+Home
+
+Video hero, stats (CountUp), partner logos, solution grid, CTA
+
+Solutions list
+
+Hero + card grid with icon boxes
+
+Solution detail
+
+Hero split, feature sections, dark stat cards, lightbox, partners
+
+Blog list
+
+Featured hero card + grid + category filter pills
+
+Blog post
+
+@tailwindcss/typography prose, ISR revalidation
+
+About
+
+Split sections, team/offices, stats
+
+Contact
+
+Hero + ContactForm (underline inputs)
+
+Legal
+
+Simple prose, text-hit-dark headings (should be text-primary)
+
+Country landing
+
+Colombia-specific pages under /colombia/
+
+Admin page template
+
+'use client';export default function AdminPage() {  const { user, role, modules } = useAuth();  const { data, isLoading } = useQuery({ ... });  return (    <div className="min-h-screen bg-gray-50 p-8">      <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-md p-8">        {isLoading ? <p>Loading...</p> : (          // form/table content        )}        <button className="bg-orange-500 hover:bg-orange-600 rounded-lg px-4 py-2                           text-white disabled:opacity-50">          Save        </button>      </div>    </div>  );} 
+
+Dashboard / CRUD / Settings
+
+Admin modules: blog editor, CMS SEO, contacts, users, Brazil simulator. All client-heavy with React Query, Supabase auth, inline tables/forms.
+
+6. REGRAS DE PADRONIZAÇÃO
+
+Visual rules
+
+Always use semantic tokens — bg-accent, text-primary, text-muted-foreground. Never hardcode #F15A22 in new code; use bg-accent or bg-cyan-hover.
+
+Marketing CTAs are pills — rounded-full, not shadcn rounded-md.
+
+Headings are black weight — font-black for H1/H2 on marketing; shadcn defaults for admin UI.
+
+Section rhythm — wrap every section in .section-padding + .container-hit.
+
+Cards use rounded-2xl on marketing; rounded-lg in shadcn/admin.
+
+Hover = accent — links and cards shift to accent color on hover.
+
+Warm neutrals only — no cold blue-gray; all grays have brown tint (HSL hue ~30).
+
+Code rules
+
+Server-first — pages are Server Components; extract 'use client' only when needed.
+
+Client suffix — interactive page sections → {Name}Client.tsx.
+
+i18n everywhere — getTranslations (server) or useTranslations (client); no hardcoded strings.
+
+SEO on every page — generateMetadata + JSON-LD.
+
+Loading states — every route gets a loading.tsx skeleton.
+
+cn() for class merging — always use cn() from @/lib/utils.
+
+Path alias @/ — never relative imports beyond one level.
+
+Component rules
+
+Marketing ≠ shadcn Button — use Tailwind pill links for CTAs.
+
+shadcn for admin/forms — Button, Input, Dialog, Toast in admin and cookie consent.
+
+No framer-motion on marketing — CSS animations only (except lightbox).
+
+Group hover pattern — group on parent, group-hover: on children.
+
+Responsive rules
+
+Mobile-first — base styles for mobile, md: for desktop.
+
+Primary breakpoint md: (768px) — nav toggle, grid columns, typography scale.
+
+Hero typography — always scale: text-4xl md:text-5xl lg:text-6xl.
+
+CTA rows — flex-col sm:flex-row for button groups.
+
+7. TEMPLATE UNIVERSAL
+
+Conceptual boilerplate
+
+hit-template/├── app/│   ├── globals.css                 # Copy token block from hit-website│   ├── layout.tsx                  # Passthrough│   └── [locale]/│       ├── layout.tsx              # Font + Navbar + Footer + Providers│       ├── page.tsx                # Home│       └── loading.tsx             # Pulse skeleton├── components/│   ├── ui/                         # npx shadcn@latest init + add components│   ├── Navbar.tsx                  # Glass nav template│   ├── Footer.tsx│   ├── CTABanner.tsx│   ├── Providers.tsx│   └── ContactForm.tsx├── lib/utils.ts                    # cn() helper├── tailwind.config.ts              # Copy extend block├── components.json                 # shadcn config└── i18n/    ├── routing.ts    └── messages/en-us.json 
+
+Starter globals.css tokens
+
+@tailwind base;@tailwind components;@tailwind utilities;@layer base {  :root {    --background: 0 0% 99%;    --foreground: 30 30% 12%;    --primary: 30 56% 7%;    --primary-foreground: 0 0% 100%;    --secondary: 30 20% 96%;    --secondary-foreground: 30 56% 7%;    --muted: 30 15% 94%;    --muted-foreground: 30 10% 46%;    --accent: 16 88% 54%;    --accent-foreground: 0 0% 100%;    --destructive: 0 84% 60%;    --destructive-foreground: 0 0% 100%;    --border: 30 15% 88%;    --input: 30 15% 88%;    --ring: 16 88% 54%;    --radius: 0.5rem;    --cyan-hover: 16 88% 47%;  }  body { @apply bg-background text-foreground font-sans antialiased; }  h1,h2,h3,h4,h5,h6 { @apply font-bold tracking-tight; }}@layer utilities {  .section-padding { @apply py-16 md:py-24 px-4 md:px-8; }  .container-hit   { @apply max-w-7xl mx-auto px-4 md:px-8; }  .nav-link        { @apply text-foreground/80 hover:text-accent transition-colors font-medium text-sm; }} 
+
+Starter page shell
+
+// app/[locale]/layout.tsxexport default async function LocaleLayout({ children, params: { locale } }) {  return (    <html lang={locale} className={anekLatin.variable}>      <body>        <NextIntlClientProvider messages={messages}>          <Providers>            <div className="flex flex-col min-h-screen">              <Navbar locale={locale} />              <main className="flex-1">{children}</main>              <Footer locale={locale} />            </div>          </Providers>        </NextIntlClientProvider>      </body>    </html>  );} 
+
+Reusable CTA component
+
+export function PrimaryCTA({ href, children }: { href: string; children: React.ReactNode }) {  return (    <Link      href={href}      className="inline-flex items-center bg-accent text-white px-7 py-3.5                 rounded-full font-semibold hover:bg-cyan-hover transition-colors text-sm"    >      {children}    </Link>  );} 
+
+Reusable section wrapper
+
+export function Section({  children,  className,  background = 'white',}: {  children: React.ReactNode;  className?: string;  background?: 'white' | 'off-white' | 'dark';}) {  const bg = {    white: 'bg-background',    'off-white': 'bg-[#f5f4f2]',    dark: 'bg-primary text-white',  }[background];  return (    <section className={cn('section-padding', bg, className)}>      <div className="container-hit">{children}</div>    </section>  );} 
+
+8. CHECKLIST DE IMPLEMENTAÇÃO
+
+Phase 1 — Foundation
+
+Initialize Next.js 15 + TypeScript + Tailwind CSS 3.4
+
+Run npx shadcn@latest init with CSS variables, slate base
+
+Copy :root token block into globals.css
+
+Copy tailwind.config.ts extend block (colors, radius, animations)
+
+Install Anek Latin via next/font/google
+
+Create lib/utils.ts with cn() helper
+
+Add .section-padding, .container-hit, .nav-link utilities
+
+Add page-in keyframe animation on main > *
+
+Phase 2 — Global chrome
+
+Build Navbar (glass, fixed, mega menu, mobile accordion, region picker)
+
+Build Footer (office grid, social icons, copy tooltips)
+
+Build Providers (React Query, TooltipProvider, Toaster)
+
+Build CookieConsent (portal, shadcn Switch/Collapsible)
+
+Build FloatingWhatsAppButton (region-aware, pulse animation)
+
+Build ScrollToTop
+
+Phase 3 — Page patterns
+
+Create hero section template (rounded-3xl, gradient overlay, font-black H1)
+
+Create feature grid template (3-col, icon boxes, group-hover accent)
+
+Create stats section (CountUp + font-black numbers)
+
+Create CTABanner component
+
+Create ContactForm (underline inputs, dial/country pickers, toast feedback)
+
+Add loading.tsx skeleton for each route
+
+Wire generateMetadata + JSON-LD on every page
+
+Phase 4 — i18n & SEO
+
+Configure next-intl with country locales
+
+Create message JSON files per locale
+
+Set up middleware (locale routing, geo redirect, cookie)
+
+Configure CMS SEO layer (DB overrides + i18n fallbacks)
+
+Set up sitemap generation script
+
+Configure OG image API route
+
+Phase 5 — Admin (if needed)
+
+Set up Supabase auth + RBAC middleware
+
+Build admin layout (separate from marketing chrome)
+
+Create admin modules (blog, CMS, contacts, users)
+
+Wire React Query for client-side data fetching
+
+Phase 6 — Polish
+
+Tokenize hardcoded hex colors (#f5f4f2, #0e0e0e, etc.)
+
+Fix text-hit-dark → text-primary
+
+Add no-JS fallbacks for interactive components
+
+Test all breakpoints (mobile nav, grid collapse, typography scale)
+
+Run Lighthouse audit (target 90+ performance)
+
+9. MELHORIAS E OPORTUNIDADES
+
+Token consolidation (high priority)
+
+Several hardcoded colors should become CSS variables:
+
+--section-bg: 30 20% 96%;        /* replaces #f5f4f2 */--nav-dark: 0 0% 5%;             /* replaces #0e0e0e */--whatsapp: 142 70% 49%;         /* replaces #25D366 */ 
+
+Extract repeated patterns into components
+
+Marketing pages repeat inline Tailwind for heroes, CTAs, and card grids. Extract:
+
+<HeroSection /> — video/image + gradient + title
+
+<FeatureGrid /> — 3-col icon cards
+
+<PrimaryCTA /> / <OutlineCTA /> — pill buttons
+
+<Section /> — wrapper with padding + container
+
+Unify admin UI with design system
+
+Admin uses raw bg-orange-500 and border-gray-200 instead of semantic tokens. Migrate admin to shadcn components + brand tokens for consistency.
+
+Dark mode (optional)
+
+Tokens are HSL-ready. Add a .dark {} block and wire next-themes (already installed) if dark mode is needed later.
+
+Animation system
+
+Create a shared motion config:
+
+export const motion = {  pageEnter: 'animation: page-in 0.22s ease-out both',  cardHover: 'transition-all duration-300 hover:border-accent hover:shadow-md',  imageScale: 'transition-transform duration-500 group-hover:scale-105',}; 
+
+Form standardization
+
+Marketing ContactForm uses custom validation; admin uses react-hook-form + zod. Standardize on react-hook-form + zod everywhere for type-safe forms.
+
+Performance
+
+Lazy-load framer-motion (only used in lightbox)
+
+Consider next/dynamic for CountUp, PartnerLogos marquee
+
+Image optimization is already configured (minimumCacheTTL: 31536000)
+
+Accessibility
+
+Marketing CTAs lack explicit focus rings — add focus-visible:ring-2 focus-visible:ring-accent
+
+Mega menu needs keyboard navigation audit
+
+Cookie consent has good focus ring — replicate pattern elsewhere
+
+Testing
+
+Playwright is installed but coverage is unclear. Add e2e tests for:
+
+Locale routing + geo redirect
+
+Contact form submission
+
+Navbar mobile menu
+
+Admin auth flow
+
+This manual is derived entirely from your hit-website repository.
